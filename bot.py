@@ -4,11 +4,10 @@ from pyowm import OWM
 from pyowm.utils.config import get_default_config
 
 
-
 config_dict = get_default_config()
-config_dict['language'] = 'uk'  
-bot = telebot.TeleBot(configKeys.BOT_TOKEN)
+config_dict['language'] = 'uk'
 owm = OWM(configKeys.WEATHER_API_KEY, config_dict)
+bot = telebot.TeleBot(configKeys.BOT_TOKEN)  
 mgr = owm.weather_manager()
 @bot.message_handler(commands=['start'])
 def start(message):
