@@ -5,8 +5,6 @@ from pyowm.utils.config import get_default_config
 
 config_dict = get_default_config()
 config_dict['language'] = 'uk'  
-bot = telebot.TeleBot("8576733471:AAFe5iFpW6Mhe56WlA7N2-opPVeZTkshKeQ")
-owm = OWM('df079185a2ce429997ac44b42118d6c5', config_dict)
 mgr = owm.weather_manager()
 @bot.message_handler(commands=['start'])
 def start(message):
