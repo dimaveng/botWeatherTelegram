@@ -1,4 +1,5 @@
 import telebot
+from telebot import types
 import configKeys
 from pyowm import OWM
 from pyowm.utils.config import get_default_config
@@ -9,6 +10,14 @@ config_dict['language'] = 'uk'
 owm = OWM(configKeys.WEATHER_API_KEY, config_dict)
 bot = telebot.TeleBot(configKeys.BOT_TOKEN)  
 mgr = owm.weather_manager()
+def set_bot_commands():
+    commands = [
+        types.BotCommand("start", "Почати спілкування з ботом"),
+        types.BotCommand("weather", "Дізнатися погоду в місті"),
+        types.BotCommand("weatherAfterday", "Дізнатися погоду в місті на завтра")
+    ]
+    bot.set_my_commands(commands)
+set_bot_commands()
 @bot.message_handler(commands=['start'])
 def start(message):
     bot.send_message(message.chat.id, "Вітаю! Я - бот який може надати інформацію про погоду. Введіть команду /weather, щоб дізнатися погоду в вашому місті.")
