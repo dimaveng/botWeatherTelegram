@@ -3,6 +3,7 @@ from telebot import types
 import configKeys
 from pyowm import OWM
 from pyowm.utils.config import get_default_config
+from datetime import datetime, timedelta
 
 # налаштування ОВМ для української мови
 config_dict = get_default_config()
@@ -42,7 +43,7 @@ def weather_command(message):
 @bot.message_handler(commands=['afterday'])
 def weather_afterday_command(message):
     msg = bot.send_message(message.chat.id, "Будь ласка, введіть назву міста (на завтра):")
-    bot.register_next_step_handler(msg, get_weather) # 
+    bot.register_next_step_handler(msg, get_weather_afterday) # ЗМІНЕНО: тепер інша функція
 
 @bot.message_handler(commands=['forecast3', 'forecast5'])
 def forecast_command(message):
@@ -65,10 +66,36 @@ def get_weather(message):
         wind_speed = weather.wind()['speed']
         description = weather.detailed_status
         
-        weather_info = f"Погода в місті {city.capitalize()}:\n\n🌡️ Температура: {temperature}°C\n🤔 Відчувається як: {feels_like}°C\n💨 Вітер: {wind_speed} м/с\n💧 Вологість: {humidity}%\n🔽 Тиск: {pressure} hPa\n☁️ Стан: {description}"
+        weather_info = f"Погода в місті {city.capitalize()} сьогодні:\n\n🌡️ Температура: {temperature}°C\n🤔 Відчувається як: {feels_like}°C\n💨 Вітер: {wind_speed} м/с\n💧 Вологість: {humidity}%\n🔽 Тиск: {pressure} hPa\n☁️ Стан: {description}"
         bot.send_message(message.chat.id, weather_info)
     except Exception as e:
         bot.send_message(message.chat.id, "😔 Не зміг знайти таке місто. Спробуйте ще раз.")
+
+def get_weather_afterday(message):
+    try:
+        city = message.text
+        forecaster = mgr.forecast_at_place(city, '3h')
+        forecast = forecaster.forecast
+        
+        # Визначаємо дату завтрашнього дня
+        tomorrow_date = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
+        
+        weather_info = f"😔 Не вдалося знайти детальний прогноз на завтра для міста {city.capitalize()}."
+        
+        for weather in forecast:
+            # Шукаємо завтрашній день, час близько полудня (12:00)
+            if tomorrow_date in weather.reference_time('iso') and "12:00" in weather.reference_time('iso'):
+                temp = weather.temperature('celsius')['temp']
+                feels_like = weather.temperature('celsius')['feels_like']
+                wind_speed = weather.wind()['speed']
+                description = weather.detailed_status
+                
+                weather_info = f"Прогноз у місті {city.capitalize()} на завтра ({tomorrow_date}):\n\n🌡️ Температура: {temp}°C\n🤔 Відчувається як: {feels_like}°C\n💨 Вітер: {wind_speed} м/с\n☁️ Стан: {description}"
+                break
+        
+        bot.send_message(message.chat.id, weather_info)
+    except Exception as e:
+        bot.send_message(message.chat.id, "😔 Помилка отримання прогнозу на завтра.")
 
 def get_forecast(message, days):
     try:
@@ -93,7 +120,6 @@ def get_forecast(message, days):
         bot.send_message(message.chat.id, res_text)
     except Exception as e:
         bot.send_message(message.chat.id, "😔 Помилка прогнозу. Перевірте назву міста.")
-
 
 @bot.message_handler(func=lambda message: True)
 def handle_unknown_command(message):
