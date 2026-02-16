@@ -13,6 +13,8 @@ mgr = owm.weather_manager()
 def start(message):
     bot.send_message(message.chat.id, "Вітаю! Я - бот який може надати інформацію про погоду. Введіть команду /weather, щоб дізнатися погоду в вашому місті.")
 
+
+@bot.message_handler(func=lambda message: message.text.lower() == "погода сьогодні")
 @bot.message_handler(commands=['weather'])
 def weather_command(message):
     msg = bot.send_message(message.chat.id, "Будь ласка, введіть назву міста:")
